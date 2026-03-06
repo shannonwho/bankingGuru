@@ -15,10 +15,14 @@ const agentLinks = [
   { to: "/disputes", label: "Dispute Management", icon: ShieldAlert },
 ];
 
+const customerLinks = [
+  { to: "/my-disputes", label: "My Disputes", icon: ShieldAlert },
+];
+
 export function Sidebar() {
   const { customer, logout } = useAuth();
   const isAgent = customer?.customer_name === AGENT_NAME;
-  const links = isAgent ? [...baseLinks, ...agentLinks] : baseLinks;
+  const links = isAgent ? [...baseLinks, ...agentLinks] : [...baseLinks, ...customerLinks];
 
   return (
     <aside className="flex h-screen w-60 flex-col border-r bg-sidebar-background">

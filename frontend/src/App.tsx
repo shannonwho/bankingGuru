@@ -4,6 +4,7 @@ import { Shell } from "@/components/layout/Shell";
 import { DashboardPage } from "@/pages/DashboardPage";
 import { TransactionsPage } from "@/pages/TransactionsPage";
 import { DisputesPage } from "@/pages/DisputesPage";
+import { MyDisputesPage } from "@/pages/MyDisputesPage";
 import { LoginPage } from "@/pages/LoginPage";
 
 const AGENT_NAME = "Support Agent";
@@ -23,6 +24,10 @@ function AppRoutes() {
         <Route
           path="disputes"
           element={isAgent ? <DisputesPage /> : <Navigate to="/" replace />}
+        />
+        <Route
+          path="my-disputes"
+          element={!isAgent ? <MyDisputesPage /> : <Navigate to="/disputes" replace />}
         />
       </Route>
     </Routes>

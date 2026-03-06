@@ -1,9 +1,10 @@
 import { useEffect, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { TransactionTable } from "@/components/transactions/TransactionTable";
 import { TransactionFilters, type Filters } from "@/components/transactions/TransactionFilters";
-import { getTransactions } from "@/lib/api";
+import { getTransactions, getDisputes } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import type { Transaction } from "@/types";
 
@@ -15,13 +16,18 @@ const emptyFilters: Filters = {
   date_to: "",
 };
 
+const AGENT_NAME = "Support Agent";
+
 export function TransactionsPage() {
   const { customer } = useAuth();
+  const navigate = useNavigate();
+  const isAgent = customer?.customer_name === AGENT_NAME;
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [filters, setFilters] = useState<Filters>(emptyFilters);
   const [error, setError] = useState("");
+  const [disputedTxnIds, setDisputedTxnIds] = useState<Set<string>>(new Set());
   const perPage = 20;
 
   const load = useCallback(() => {
@@ -43,6 +49,13 @@ export function TransactionsPage() {
 
   useEffect(() => { load(); }, [load]);
 
+  useEffect(() => {
+    if (isAgent || !customer) return;
+    getDisputes({ customer_name: customer.customer_name })
+      .then((disputes) => setDisputedTxnIds(new Set(disputes.map((d) => d.transaction_id))))
+      .catch(() => {});
+  }, [customer, isAgent]);
+
   const totalPages = Math.ceil(total / perPage);
 
   return (
@@ -58,7 +71,11 @@ export function TransactionsPage() {
       {error && <p className="text-destructive">{error}</p>}
 
       <Card>
-        <TransactionTable transactions={transactions} />
+        <TransactionTable
+          transactions={transactions}
+          onDispute={!isAgent ? (t) => navigate(`/my-disputes?txn=${t.id}`) : undefined}
+          disputedTxnIds={!isAgent ? disputedTxnIds : undefined}
+        />
       </Card>
 
       <div className="flex items-center justify-between">
