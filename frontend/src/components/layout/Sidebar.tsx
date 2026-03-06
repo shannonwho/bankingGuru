@@ -4,14 +4,21 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 
-const links = [
+const AGENT_NAME = "Support Agent";
+
+const baseLinks = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
   { to: "/transactions", label: "Transactions", icon: ArrowLeftRight },
-  { to: "/disputes", label: "Disputes", icon: ShieldAlert },
+];
+
+const agentLinks = [
+  { to: "/disputes", label: "Dispute Management", icon: ShieldAlert },
 ];
 
 export function Sidebar() {
   const { customer, logout } = useAuth();
+  const isAgent = customer?.customer_name === AGENT_NAME;
+  const links = isAgent ? [...baseLinks, ...agentLinks] : baseLinks;
 
   return (
     <aside className="flex h-screen w-60 flex-col border-r bg-sidebar-background">

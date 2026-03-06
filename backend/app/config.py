@@ -2,7 +2,7 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    database_url: str = "sqlite:///./test.db"
+    database_url: str = "sqlite:///./dev.db"
     debug: bool = True
 
     model_config = {"env_prefix": "BANKING_"}

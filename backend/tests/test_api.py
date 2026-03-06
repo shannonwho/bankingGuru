@@ -10,11 +10,11 @@ def test_health(client):
 def test_seed_and_list_accounts(client, db):
     r = client.post("/api/v1/seed")
     assert r.status_code == 200
-    assert r.json()["accounts"] == 8
+    assert r.json()["accounts"] == 9
 
     r = client.get("/api/v1/accounts")
     assert r.status_code == 200
-    assert len(r.json()) == 8
+    assert len(r.json()) == 9
 
 
 def test_customers_endpoint(client, db):
@@ -22,7 +22,7 @@ def test_customers_endpoint(client, db):
     r = client.get("/api/v1/customers")
     assert r.status_code == 200
     customers = r.json()
-    assert len(customers) == 5
+    assert len(customers) == 6
     # Marcus Chen has 3 accounts (checking, savings, credit_card)
     marcus = next(c for c in customers if c["customer_name"] == "Marcus Chen")
     assert len(marcus["account_ids"]) == 3
@@ -134,19 +134,19 @@ def test_disputes_workflow(client, db):
     )
     assert r.status_code == 201
     dispute = r.json()
-    assert dispute["status"] == "open"
+    assert dispute["status"] == "submitted"
     dispute_id = dispute["id"]
 
-    # Invalid transition: open -> resolved
+    # Invalid transition: submitted -> resolved
     r = client.patch(f"/api/v1/disputes/{dispute_id}", json={"status": "resolved"})
     assert r.status_code == 422
 
-    # Valid: open -> investigating
-    r = client.patch(f"/api/v1/disputes/{dispute_id}", json={"status": "investigating"})
+    # Valid: submitted -> under_review
+    r = client.patch(f"/api/v1/disputes/{dispute_id}", json={"status": "under_review"})
     assert r.status_code == 200
-    assert r.json()["status"] == "investigating"
+    assert r.json()["status"] == "under_review"
 
-    # Valid: investigating -> resolved
+    # Valid: under_review -> resolved
     r = client.patch(
         f"/api/v1/disputes/{dispute_id}",
         json={"status": "resolved", "resolution_note": "Refund issued."},
@@ -158,7 +158,7 @@ def test_disputes_workflow(client, db):
     assert data["resolved_at"] is not None
 
     # Terminal: resolved -> anything fails
-    r = client.patch(f"/api/v1/disputes/{dispute_id}", json={"status": "open"})
+    r = client.patch(f"/api/v1/disputes/{dispute_id}", json={"status": "submitted"})
     assert r.status_code == 422
 
 
@@ -179,6 +179,6 @@ def test_dashboard_summary(client, db):
     r = client.get("/api/v1/dashboard/summary")
     assert r.status_code == 200
     data = r.json()
-    assert data["total_accounts"] == 8
+    assert data["total_accounts"] == 9
     assert data["transaction_count"] > 0
     assert len(data["recent_transactions"]) <= 10

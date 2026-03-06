@@ -50,7 +50,7 @@ MERCHANTS = {
     ],
 }
 
-# 5 customers, some with multiple accounts (8 accounts total)
+# 5 customers + 1 support agent, some with multiple accounts (8 customer accounts total)
 CUSTOMER_ACCOUNTS = [
     ("Aisha Patel", "aisha.patel@email.com", ["checking", "savings"]),
     ("Marcus Chen", "marcus.chen@email.com", ["checking", "savings", "credit_card"]),
@@ -59,8 +59,10 @@ CUSTOMER_ACCOUNTS = [
     ("Yuki Tanaka", "yuki.tanaka@email.com", ["checking"]),
 ]
 
+AGENT_ACCOUNT = ("Support Agent", "support@fintechco.com", ["checking"])
+
 DISPUTE_REASONS = ["unauthorized", "duplicate", "wrong_amount", "not_received", "other"]
-DISPUTE_STATUSES = ["open", "open", "investigating", "investigating", "resolved", "denied"]
+DISPUTE_STATUSES = ["submitted", "submitted", "under_review", "under_review", "resolved", "rejected"]
 
 
 def seed_data(db: Session) -> dict:
@@ -74,9 +76,10 @@ def seed_data(db: Session) -> dict:
     accounts = []
     all_transactions = []
 
-    # Create accounts — 5 customers, some with multiple accounts (8 total)
+    # Create accounts — 5 customers + 1 agent
+    all_seed_accounts = CUSTOMER_ACCOUNTS + [AGENT_ACCOUNT]
     acct_index = 0
-    for name, email, acct_types in CUSTOMER_ACCOUNTS:
+    for name, email, acct_types in all_seed_accounts:
         for acct_type in acct_types:
             acct = Account(
                 id=uuid.uuid4(),
@@ -163,9 +166,9 @@ def seed_data(db: Session) -> dict:
             reason=random.choice(DISPUTE_REASONS),
             description=f"Customer disputes charge of ${abs(txn.amount):.2f} at {txn.merchant_name}.",
             status=status,
-            resolution_note="Reviewed and processed." if status in ("resolved", "denied") else None,
+            resolution_note="Reviewed and processed." if status in ("resolved", "rejected") else None,
             filed_at=txn.transacted_at + timedelta(days=random.randint(1, 7)),
-            resolved_at=(txn.transacted_at + timedelta(days=random.randint(8, 21))) if status in ("resolved", "denied") else None,
+            resolved_at=(txn.transacted_at + timedelta(days=random.randint(8, 21))) if status in ("resolved", "rejected") else None,
         )
         db.add(dispute)
         disputes_created += 1

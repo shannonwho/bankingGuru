@@ -10,32 +10,39 @@
 ```
 backend/
   app/
-    main.py          # FastAPI app, dashboard + seed endpoints
-    models.py        # SQLAlchemy ORM models: Account, Transaction
+    main.py          # FastAPI app, lifespan (auto-seed), dashboard endpoints
+    models.py        # SQLAlchemy ORM models: Account, Transaction, Dispute
     schemas.py       # Pydantic request/response schemas + validators
     database.py      # DB engine, session, Base
-    seed.py          # Demo data seeder
+    config.py        # Settings (database_url, debug) — dev DB is dev.db
+    seed.py          # Demo data seeder (customers + agent)
     routers/
       accounts.py
       transactions.py
+      disputes.py    # CRUD + state machine (submitted → under_review → resolved/rejected)
   tests/
-    conftest.py      # pytest fixtures: in-memory SQLite, TestClient
+    conftest.py      # pytest fixtures: in-memory SQLite (StaticPool), TestClient
     test_api.py      # General API integration tests
+    test_disputes.py # Dispute-specific tests (12 cases)
 
 frontend/
   src/
     pages/           # Route-level components
     components/
       ui/            # shadcn primitives (do not modify)
-      layout/        # Shell, Sidebar
+      layout/        # Shell, Sidebar (agent-aware nav)
       accounts/      # AccountCard, AccountList
       transactions/  # TransactionTable, TransactionFilters
+      disputes/      # DisputeForm, DisputeList, DisputeDetail, DisputeStatusBadge
     lib/
       api.ts         # All fetch calls — single source of truth
       utils.ts       # formatCurrency, formatDate, formatDateTime, cn
     types/index.ts   # Shared TypeScript interfaces
     contexts/
       AuthContext.tsx # Customer login context
+
+scripts/
+  demo.sh            # Clean-slate demo launcher (kills servers, wipes DB, starts both)
 
 .github/
   workflows/
@@ -52,6 +59,12 @@ frontend/
 - HTTP status codes: 201 for creates, 404 for not found, 409 for conflicts, 422 for business rule violations
 - DB sessions injected via `Depends(get_db)` — never create sessions manually in routes
 
+### Database & startup
+- Dev database: `dev.db` (SQLite), configured in `config.py` — never `test.db`
+- `main.py` lifespan handler runs `create_all` + auto-seed on every startup — tables and demo data are always available, even after `--reload`
+- Tests use in-memory SQLite with `StaticPool` — completely isolated from the dev DB, no file on disk
+- Never share a DB file between the server and test suite
+
 ### Frontend
 - All API calls go through `src/lib/api.ts` — never use `fetch` directly in components
 - Shared types live in `src/types/index.ts` — keep in sync with backend schemas
@@ -59,9 +72,10 @@ frontend/
 - Format all currency with `formatCurrency()`, all dates with `formatDate()` / `formatDateTime()`
 - Error state pattern: `const [error, setError] = useState("")` → render as `<p className="text-destructive">`
 - Loading state pattern: `const [saving, setSaving] = useState(false)` on async actions
+- Agent-only features gated on `customer_name === "Support Agent"` in Sidebar and App.tsx routes
 
 ### Testing
-- Backend tests use an in-memory SQLite DB via `conftest.py` fixtures — no real DB needed
+- Backend tests use in-memory SQLite with `StaticPool` via `conftest.py` — never touches `dev.db`
 - Every new API endpoint needs at minimum: happy path, 404/422, conflict/duplicate
 - State machines need: every valid transition + every invalid transition + terminal state block
 - Time-based logic needs: boundary tests at N-1, N, N+1 days
@@ -81,4 +95,5 @@ frontend/
 - Aisha Patel — 2 accounts (checking, savings)
 - Sofia Rodriguez — 1 account
 - Yuki Tanaka — 1 account
-- James Okafor — 1 account
+- James O'Brien — 1 account
+- **Support Agent** — 1 account (agent role, access to Dispute Management)

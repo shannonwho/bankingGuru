@@ -63,7 +63,7 @@ class Dispute(Base):
     account_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("accounts.id"))
     reason: Mapped[str] = mapped_column(String(50))
     description: Mapped[str] = mapped_column(Text)
-    status: Mapped[str] = mapped_column(String(20), default="open")
+    status: Mapped[str] = mapped_column(String(20), default="submitted")
     resolution_note: Mapped[str | None] = mapped_column(Text, nullable=True)
     filed_at: Mapped[datetime] = mapped_column(default=_utcnow)
     resolved_at: Mapped[datetime | None] = mapped_column(nullable=True)
