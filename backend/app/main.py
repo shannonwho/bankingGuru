@@ -3,13 +3,15 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-from app.database import get_db
+from app.database import engine, get_db, Base
 from app.models import Account, Transaction, Dispute
 from app.schemas import CustomerOut, DashboardSummary, TransactionOut
 from app.seed import seed_data
 from app.routers import accounts, transactions, disputes
 
-app = FastAPI(title="Banking Guru API", version="0.1.0")
+app = FastAPI(title="FinTechCo API", version="0.1.0")
+
+Base.metadata.create_all(bind=engine)
 
 app.add_middleware(
     CORSMiddleware,
