@@ -12,7 +12,7 @@ CUSTOMER_NAMES = [
     "Wei Zhang", "Fatima Al-Rashid", "Carlos Mendoza", "Hannah Johansson", "Kofi Asante",
 ]
 
-MERCHANTS = {
+MERCHANTS: dict[str, list[tuple[str, tuple[float, float]]]] = {
     "groceries": [
         ("Whole Foods Market", (15, 250)),
         ("Trader Joe's", (12, 180)),

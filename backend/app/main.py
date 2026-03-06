@@ -7,7 +7,7 @@ from app.database import get_db
 from app.models import Account, Transaction, Dispute
 from app.schemas import CustomerOut, DashboardSummary, TransactionOut
 from app.seed import seed_data
-from app.routers import accounts, transactions, disputes
+from app.routers import accounts, transactions, disputes, fraud
 
 app = FastAPI(title="Banking Guru API", version="0.1.0")
 
@@ -22,6 +22,7 @@ app.add_middleware(
 app.include_router(accounts.router, prefix="/api/v1")
 app.include_router(transactions.router, prefix="/api/v1")
 app.include_router(disputes.router, prefix="/api/v1")
+app.include_router(fraud.router, prefix="/api/v1")
 
 
 @app.get("/api/v1/health")

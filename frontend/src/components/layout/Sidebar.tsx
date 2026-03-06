@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { LayoutDashboard, ArrowLeftRight, ShieldAlert, LogOut } from "lucide-react";
+import { LayoutDashboard, ArrowLeftRight, ShieldAlert, ShieldCheck, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ const links = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
   { to: "/transactions", label: "Transactions", icon: ArrowLeftRight },
   { to: "/disputes", label: "Disputes", icon: ShieldAlert },
+  { to: "/fraud", label: "Fraud Detection", icon: ShieldCheck },
 ];
 
 export function Sidebar() {

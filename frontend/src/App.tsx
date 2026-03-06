@@ -5,6 +5,7 @@ import { DashboardPage } from "@/pages/DashboardPage";
 import { TransactionsPage } from "@/pages/TransactionsPage";
 import { DisputesPage } from "@/pages/DisputesPage";
 import { LoginPage } from "@/pages/LoginPage";
+import { FraudDashboardPage } from "@/pages/FraudDashboardPage";
 
 function AppRoutes() {
   const { customer } = useAuth();
@@ -17,6 +18,7 @@ function AppRoutes() {
         <Route index element={<DashboardPage />} />
         <Route path="transactions" element={<TransactionsPage />} />
         <Route path="disputes" element={<DisputesPage />} />
+        <Route path="fraud" element={<FraudDashboardPage />} />
       </Route>
     </Routes>
   );
