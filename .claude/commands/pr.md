@@ -1,4 +1,4 @@
-Create a pull request for the current feature branch in the bankingGuru project.
+Create a pull request for the current feature branch in the FinTechCo project.
 
 ## Prerequisites
 Ensure `gh` CLI is authenticated: `gh auth status`

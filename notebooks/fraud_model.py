@@ -4,7 +4,7 @@
 # Trained on 18 months of transaction history (offline, in Jupyter)
 #
 # Status: READY FOR PRODUCTION — needs backend integration
-# Contact: ds-team@bankingguru.com
+# Contact: ds-team@fintechco.com
 # ---------------------------------------------------------------
 
 HIGH_RISK_CATEGORIES = {"crypto_exchange", "wire_transfer", "gambling", "pawn_shop"}

@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import Account, Transaction
 from app.schemas import TransactionOut, TransactionListResponse
+from app.chaos import simulate_payment_api_call
 
 router = APIRouter(prefix="/transactions", tags=["transactions"])
 
@@ -64,3 +65,16 @@ def get_transaction(transaction_id: UUID, db: Session = Depends(get_db)):
     if not txn:
         raise HTTPException(status_code=404, detail="Transaction not found")
     return txn
+
+
+@router.post("/{transaction_id}/verify")
+def verify_transaction(transaction_id: UUID, db: Session = Depends(get_db)):
+    """Verify a transaction with the external payment processor. Demonstrates third-party API dependency."""
+    txn = db.query(Transaction).filter(Transaction.id == transaction_id).first()
+    if not txn:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+    try:
+        result = simulate_payment_api_call(str(txn.id), float(txn.amount))
+        return {"transaction_id": str(txn.id), "verification": result}
+    except ConnectionError as e:
+        raise HTTPException(status_code=502, detail=str(e))

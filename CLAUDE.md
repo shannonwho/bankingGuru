@@ -1,4 +1,4 @@
-# bankingGuru — Project Intelligence
+# FinTechCo — Project Intelligence
 
 ## Stack
 - **Backend**: Python 3.12, FastAPI, SQLAlchemy 2.0, Pydantic v2, Alembic, SQLite (dev) / PostgreSQL (prod)

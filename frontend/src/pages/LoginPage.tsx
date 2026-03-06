@@ -21,9 +21,9 @@ export function LoginPage() {
       <div className="w-full max-w-3xl space-y-6">
         <div className="text-center">
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
-            <span className="text-lg font-bold text-primary-foreground">BG</span>
+            <span className="text-lg font-bold text-primary-foreground">FC</span>
           </div>
-          <h1 className="text-2xl font-bold">Banking Guru</h1>
+          <h1 className="text-2xl font-bold">FinTechCo</h1>
           <p className="mt-1 text-sm text-muted-foreground">Select your account to continue</p>
         </div>
 

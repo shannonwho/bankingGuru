@@ -1,4 +1,4 @@
-Fix all lint and style errors in the bankingGuru project.
+Fix all lint and style errors in the FinTechCo project.
 
 ## Steps
 
