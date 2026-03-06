@@ -1,47 +1,69 @@
 Sync the current feature branch work to Linear for issue tracking.
 
+This is the comprehensive standalone skill. Linear transitions are also embedded in individual SDLC skills:
+- `/lint-fix` → moves issue Backlog → **In Progress** (first touch)
+- `/pr` → moves issue In Progress → **In Review** + updates description + creates follow-up issues
+
+Use `/linear-sync` when you want to do all of the above in one shot, or to catch up if individual skills were run without Linear integration.
+
+## SDLC status lifecycle
+```
+Backlog → In Progress → In Review → Done
+  (lint-fix)        (pr created)  (pr merged)
+```
+
 ## Steps
 
 1. **Identify the Linear issue**
    Extract the issue ID from the current branch name (e.g. `feature/dis-10-...` → DIS-10).
-   Use the Linear MCP tool (`search_issues`) to find the issue, then `get_issue` for full details.
+   Use `search_issues` to find it, then `get_issue` for full details including current status and AC.
 
-2. **Gather what was done**
+2. **Determine correct status**
+   Based on the current state of the branch:
+   - Has uncommitted changes or no PR? → **In Progress**
+   - Has an open PR? (`gh pr view --json state` → `OPEN`) → **In Review**
+   - PR merged? (`gh pr view --json state` → `MERGED`) → **Done**
+   Use `update_issue` with the status name (e.g. `status: "In Progress"`).
+   The patched Linear MCP resolves status names to UUIDs automatically.
+
+3. **Gather what was done**
    Run in parallel:
    - `git log main..HEAD --oneline` — all commits on this branch
    - `git diff main...HEAD --stat` — files changed summary
-   - Check for an open PR: `gh pr view --json url,title,state 2>/dev/null`
-   - Check CI status: `gh run list --branch $(git branch --show-current) --limit 3 2>/dev/null`
+   - `gh pr view --json url,title,state 2>/dev/null` — PR status
+   - `gh run list --branch $(git branch --show-current) --limit 3 2>/dev/null` — CI status
+   - Run `pytest tests/ -v --tb=line` and `tsc --noEmit` to get latest test/type counts
 
-3. **Update the Linear issue description**
-   Use `update_issue` to replace the description with a structured summary:
-   - Keep the original **Overview** section
-   - Update **Acceptance Criteria** with checkboxes (`[x]` / `[ ]`) reflecting what was built vs deferred
-   - Add an **Implementation Summary** section with subsections:
+4. **Update the Linear issue description**
+   Use `update_issue` to set the description with:
+   - Original **Overview** section (preserved from the issue)
+   - **Acceptance Criteria** with checkboxes reflecting what was built vs deferred
+   - **Implementation Summary** with subsections:
      - **Backend**: endpoints, models, business rules added/changed
      - **Frontend**: pages, components, types added/changed
-     - **Tests**: count of tests, what scenarios they cover
-     - **CI/CD**: pipeline steps, PR link, branch name
-   - Add **Notes** for deferred work, tech debt, or follow-up references
+     - **Tests**: count of tests passing, what scenarios they cover
+     - **CI/CD**: pipeline steps, PR link, branch name, latest CI run status
+   - **Notes** for deferred work, tech debt, or follow-up references
 
-4. **Create follow-up issues for deferred AC**
-   For each acceptance criterion that was NOT met:
-   - Create a new Linear issue on the same team with:
+5. **Create follow-up issues for deferred AC**
+   For each acceptance criterion NOT met:
+   - Create a new issue on the same team (`create_issue`) with:
      - Clear title describing the deferred work
-     - Description linking back to the parent issue with context on why it was deferred
+     - Description linking back to parent issue with context on why deferred
      - Detailed AC for the follow-up scope
-     - Prerequisites or blockers that caused the deferral
-     - Priority: 2 (High) if it's a core AC, 3 (Medium) if nice-to-have
-   - Reference the new issue ID (e.g. DIS-15) in the parent issue's deferred AC line
+     - Prerequisites or blockers
+     - Priority: 2 (High) for core AC, 3 (Medium) for nice-to-have
+   - Reference the new issue ID in the parent's deferred AC line
 
-5. **Report**
-   Summarize:
-   - Which Linear issue was updated and link to it
-   - Which follow-up issues were created (ID, title, link)
-   - Any AC items that could not be automatically tracked
+6. **Report**
+   - Which issue was updated (ID, title, new status, link)
+   - Follow-up issues created (ID, title, link)
+   - Any AC items that couldn't be automatically tracked
 
-## Best practices
-- Never mark an AC as done (`[x]`) unless the code is committed and tested
-- Deferred work always gets its own issue — don't leave unchecked boxes without a tracking reference
-- Link PRs in the issue description so reviewers can cross-reference
-- Keep implementation summaries factual: counts, file names, endpoint paths — not prose
+## Important notes
+- Never mark an AC as `[x]` unless the code is committed and tests pass
+- Deferred work always gets its own issue — no unchecked boxes without a tracking reference
+- The patched Linear MCP at `.claude/patches/linear-mcp-patched.js` adds:
+  - `list_states` tool: lists workflow state UUIDs for a team
+  - `update_issue` status name resolution: accepts "In Progress" instead of requiring a UUID
+  - If the MCP is reset (npx cache cleared), re-apply: `cp .claude/patches/linear-mcp-patched.js ~/.npm/_npx/935194573f4e6558/node_modules/@mseep/linear-mcp/build/index.js`
