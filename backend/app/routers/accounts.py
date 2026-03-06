@@ -37,7 +37,7 @@ def get_account(account_id: UUID, db: Session = Depends(get_db)):
 
     open_disputes = (
         db.query(func.count(Dispute.id))
-        .filter(Dispute.account_id == account_id, Dispute.status.in_(["open", "investigating"]))
+        .filter(Dispute.account_id == account_id, Dispute.status.in_(["submitted", "under_review"]))
         .scalar()
     )
 

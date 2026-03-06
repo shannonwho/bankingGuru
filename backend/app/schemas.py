@@ -1,7 +1,11 @@
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
+
+DISPUTE_WINDOW_DAYS = 120
+
+ALLOWED_DISPUTE_REASONS = {"unauthorized", "duplicate", "wrong_amount", "not_received", "other"}
 
 
 # --- Customer ---
@@ -82,6 +86,13 @@ class DisputeCreate(BaseModel):
     transaction_id: UUID
     reason: str
     description: str
+
+    @field_validator("reason")
+    @classmethod
+    def reason_must_be_valid(cls, v: str) -> str:
+        if v not in ALLOWED_DISPUTE_REASONS:
+            raise ValueError(f"Reason must be one of: {', '.join(sorted(ALLOWED_DISPUTE_REASONS))}")
+        return v
 
 
 class DisputeUpdate(BaseModel):

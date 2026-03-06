@@ -3,6 +3,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 *.egg-info/
+
+# SQLite dev database
+*.db
 dist/
 build/
 .eggs/

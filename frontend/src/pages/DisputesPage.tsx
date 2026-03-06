@@ -3,13 +3,10 @@ import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DisputeList } from "@/components/disputes/DisputeList";
 import { DisputeDetail } from "@/components/disputes/DisputeDetail";
-import { DisputeForm } from "@/components/disputes/DisputeForm";
 import { getDisputes } from "@/lib/api";
-import { useAuth } from "@/contexts/AuthContext";
 import type { Dispute } from "@/types";
 
 export function DisputesPage() {
-  const { customer } = useAuth();
   const [disputes, setDisputes] = useState<Dispute[]>([]);
   const [selected, setSelected] = useState<Dispute | null>(null);
   const [statusFilter, setStatusFilter] = useState("");
@@ -17,30 +14,26 @@ export function DisputesPage() {
 
   const load = () => {
     const params: Record<string, string> = {};
-    if (customer) params.customer_name = customer.customer_name;
     if (statusFilter && statusFilter !== "all") params.status = statusFilter;
     getDisputes(params)
       .then(setDisputes)
       .catch((e) => setError(e.message));
   };
 
-  useEffect(() => { load(); }, [statusFilter, customer]);
+  useEffect(() => { load(); }, [statusFilter]);
 
   const handleUpdated = (updated: Dispute) => {
     setDisputes((prev) => prev.map((d) => (d.id === updated.id ? updated : d)));
     setSelected(updated);
   };
 
-  const handleCreated = (d: Dispute) => {
-    setDisputes((prev) => [d, ...prev]);
-    setSelected(d);
-  };
-
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Disputes</h1>
-        <DisputeForm onCreated={handleCreated} />
+        <div>
+          <h1 className="text-2xl font-bold">Dispute Management</h1>
+          <p className="text-sm text-muted-foreground">Review and resolve customer disputes</p>
+        </div>
       </div>
 
       <div className="flex items-center gap-3">
@@ -49,10 +42,10 @@ export function DisputesPage() {
           <SelectTrigger className="w-40"><SelectValue placeholder="All statuses" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All</SelectItem>
-            <SelectItem value="open">Open</SelectItem>
-            <SelectItem value="investigating">Investigating</SelectItem>
+            <SelectItem value="submitted">Submitted</SelectItem>
+            <SelectItem value="under_review">Under Review</SelectItem>
             <SelectItem value="resolved">Resolved</SelectItem>
-            <SelectItem value="denied">Denied</SelectItem>
+            <SelectItem value="rejected">Rejected</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -69,7 +62,7 @@ export function DisputesPage() {
             <DisputeDetail dispute={selected} onUpdated={handleUpdated} />
           ) : (
             <p className="p-6 text-center text-sm text-muted-foreground">
-              Select a dispute to view details
+              Select a dispute to review
             </p>
           )}
         </Card>

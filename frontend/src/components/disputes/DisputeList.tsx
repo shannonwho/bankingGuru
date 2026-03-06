@@ -1,14 +1,7 @@
 import type { Dispute } from "@/types";
-import { Badge } from "@/components/ui/badge";
-import { formatDate, formatCurrency } from "@/lib/utils";
+import { DisputeStatusBadge } from "@/components/disputes/DisputeStatusBadge";
+import { formatDate } from "@/lib/utils";
 import { cn } from "@/lib/utils";
-
-const statusVariant: Record<string, "default" | "warning" | "success" | "destructive"> = {
-  open: "warning",
-  investigating: "default",
-  resolved: "success",
-  denied: "destructive",
-};
 
 interface Props {
   disputes: Dispute[];
@@ -34,7 +27,7 @@ export function DisputeList({ disputes, selectedId, onSelect }: Props) {
         >
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium capitalize">{d.reason.replace("_", " ")}</span>
-            <Badge variant={statusVariant[d.status] ?? "secondary"}>{d.status}</Badge>
+            <DisputeStatusBadge status={d.status} />
           </div>
           <span className="text-xs text-muted-foreground">
             Filed {formatDate(d.filed_at)}

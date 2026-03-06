@@ -1,17 +1,30 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-from app.database import engine, get_db, Base
+from app.database import engine, get_db, Base, SessionLocal
 from app.models import Account, Transaction, Dispute
 from app.schemas import CustomerOut, DashboardSummary, TransactionOut
 from app.seed import seed_data
 from app.routers import accounts, transactions, disputes
 
-app = FastAPI(title="FinTechCo API", version="0.1.0")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Create tables and seed demo data on every startup — survives --reload."""
+    Base.metadata.create_all(bind=engine)
+    db = SessionLocal()
+    try:
+        if db.query(Account).count() == 0:
+            seed_data(db)
+    finally:
+        db.close()
+    yield
 
-Base.metadata.create_all(bind=engine)
+
+app = FastAPI(title="FinTechCo API", version="0.1.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -77,7 +90,7 @@ def dashboard_summary(customer_name: str | None = None, db: Session = Depends(ge
         txn_q.with_entities(func.coalesce(func.sum(func.abs(Transaction.amount)), 0)).scalar()
     )
 
-    disp_q = db.query(func.count(Dispute.id)).filter(Dispute.status.in_(["open", "investigating"]))
+    disp_q = db.query(func.count(Dispute.id)).filter(Dispute.status.in_(["submitted", "under_review"]))
     if customer_name:
         disp_q = disp_q.filter(Dispute.account_id.in_(acct_ids) if acct_ids else Dispute.account_id.is_(None))
     open_disputes = disp_q.scalar()

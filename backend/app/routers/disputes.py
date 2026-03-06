@@ -6,13 +6,13 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import Account, Dispute, Transaction
-from app.schemas import DisputeOut, DisputeCreate, DisputeUpdate
+from app.schemas import DisputeOut, DisputeCreate, DisputeUpdate, DISPUTE_WINDOW_DAYS
 
 router = APIRouter(prefix="/disputes", tags=["disputes"])
 
 VALID_TRANSITIONS = {
-    "open": {"investigating", "denied"},
-    "investigating": {"resolved", "denied"},
+    "submitted": {"under_review", "rejected"},
+    "under_review": {"resolved", "rejected"},
 }
 
 
@@ -52,6 +52,11 @@ def create_dispute(body: DisputeCreate, db: Session = Depends(get_db)):
     if existing:
         raise HTTPException(status_code=409, detail="Dispute already exists for this transaction")
 
+    transacted_at = txn.transacted_at if txn.transacted_at.tzinfo else txn.transacted_at.replace(tzinfo=timezone.utc)
+    age_days = (datetime.now(timezone.utc) - transacted_at).days
+    if age_days > DISPUTE_WINDOW_DAYS:
+        raise HTTPException(status_code=422, detail="Transaction is older than 120 days")
+
     dispute = Dispute(
         transaction_id=body.transaction_id,
         account_id=txn.account_id,
@@ -80,7 +85,7 @@ def update_dispute(dispute_id: UUID, body: DisputeUpdate, db: Session = Depends(
     dispute.status = body.status
     if body.resolution_note is not None:
         dispute.resolution_note = body.resolution_note
-    if body.status in ("resolved", "denied"):
+    if body.status in ("resolved", "rejected"):
         dispute.resolved_at = datetime.now(timezone.utc)
 
     db.commit()
