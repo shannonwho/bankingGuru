@@ -17,9 +17,9 @@ export function Sidebar() {
     <aside className="flex h-screen w-60 flex-col border-r bg-sidebar-background">
       <div className="flex h-14 items-center gap-2 border-b px-4">
         <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-          <span className="text-sm font-bold text-primary-foreground">BG</span>
+          <span className="text-sm font-bold text-primary-foreground">FC</span>
         </div>
-        <span className="text-lg font-semibold">Banking Guru</span>
+        <span className="text-lg font-semibold">FinTechCo</span>
       </div>
       <nav className="flex-1 space-y-1 p-3">
         {links.map(({ to, label, icon: Icon }) => (
