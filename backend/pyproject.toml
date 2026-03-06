@@ -1,5 +1,5 @@
 [project]
-name = "banking-guru-backend"
+name = "fintechco-backend"
 version = "0.1.0"
 description = "Digital Banking Dashboard API"
 requires-python = ">=3.11"
@@ -11,6 +11,7 @@ dependencies = [
     "alembic>=1.14.0",
     "pydantic>=2.10.0",
     "pydantic-settings>=2.6.0",
+    "ddtrace>=2.0.0",
 ]
 
 [project.optional-dependencies]

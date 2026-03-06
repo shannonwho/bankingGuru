@@ -6,6 +6,7 @@ import type {
   Transaction,
   Dispute,
   DashboardSummary,
+  FraudSummary,
 } from "@/types";
 
 const BASE = "/api/v1";
@@ -80,6 +81,13 @@ export const getDashboardSummary = (params: Record<string, string> = {}) => {
   const qs = new URLSearchParams(params);
   return fetchJSON<DashboardSummary>(`${BASE}/dashboard/summary?${qs.toString()}`);
 };
+
+// Fraud
+export function getFraudScores(params: { customer_name?: string }) {
+  const qs = new URLSearchParams();
+  if (params.customer_name) qs.set("customer_name", params.customer_name);
+  return fetchJSON<FraudSummary>(`${BASE}/fraud/scores?${qs}`);
+}
 
 // Seed
 export const seedData = () =>

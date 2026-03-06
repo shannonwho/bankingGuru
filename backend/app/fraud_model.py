@@ -1,12 +1,3 @@
-# fraud_model.py
-# ---------------------------------------------------------------
-# Fraud scoring model — built by data science team
-# Trained on 18 months of transaction history (offline, in Jupyter)
-#
-# Status: READY FOR PRODUCTION — needs backend integration
-# Contact: ds-team@fintechco.com
-# ---------------------------------------------------------------
-
 HIGH_RISK_CATEGORIES = {"crypto_exchange", "wire_transfer", "gambling", "pawn_shop"}
 UNUSUAL_HOURS = set(range(1, 5))  # 1am – 4am
 
@@ -66,28 +57,3 @@ def score_transaction(
         "risk_level": risk_level,
         "flags": flags,
     }
-
-
-# ---------------------------------------------------------------
-# Quick local test — run: python notebooks/fraud_model.py
-# ---------------------------------------------------------------
-if __name__ == "__main__":
-    examples = [
-        # Suspicious: large amount + bad category + odd hour
-        dict(amount=4500, merchant_category="crypto_exchange", hour_of_day=2,
-             avg_customer_amount=120, is_account_frozen=False),
-        # Clean transaction
-        dict(amount=85, merchant_category="groceries", hour_of_day=14,
-             avg_customer_amount=95, is_account_frozen=False),
-        # Borderline: slightly elevated amount, normal category
-        dict(amount=380, merchant_category="electronics", hour_of_day=19,
-             avg_customer_amount=110, is_account_frozen=False),
-    ]
-
-    for txn in examples:
-        result = score_transaction(**txn)
-        print(f"Amount: ${txn['amount']:>7,.2f} | "
-              f"Category: {txn['merchant_category']:<18} | "
-              f"Score: {result['fraud_score']:.2f} | "
-              f"Risk: {result['risk_level']:<6} | "
-              f"Flags: {len(result['flags'])}")

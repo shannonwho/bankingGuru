@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { LayoutDashboard, ArrowLeftRight, ShieldAlert, LogOut } from "lucide-react";
+import { LayoutDashboard, ArrowLeftRight, ShieldAlert, ShieldCheck, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ const links = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
   { to: "/transactions", label: "Transactions", icon: ArrowLeftRight },
   { to: "/disputes", label: "Disputes", icon: ShieldAlert },
+  { to: "/fraud", label: "Fraud Detection", icon: ShieldCheck },
 ];
 
 export function Sidebar() {
@@ -17,9 +18,9 @@ export function Sidebar() {
     <aside className="flex h-screen w-60 flex-col border-r bg-sidebar-background">
       <div className="flex h-14 items-center gap-2 border-b px-4">
         <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-          <span className="text-sm font-bold text-primary-foreground">BG</span>
+          <span className="text-sm font-bold text-primary-foreground">FC</span>
         </div>
-        <span className="text-lg font-semibold">Banking Guru</span>
+        <span className="text-lg font-semibold">FinTechCo</span>
       </div>
       <nav className="flex-1 space-y-1 p-3">
         {links.map(({ to, label, icon: Icon }) => (

@@ -1,4 +1,4 @@
-# Banking Guru
+# FinTechCo
 
 A production-credible Digital Banking Dashboard demo featuring account management, transaction tracking, and a complete dispute workflow.
 
@@ -57,7 +57,7 @@ pytest
 ## Project Structure
 
 ```
-bankingGuru/
+FinTechCo/
 ├── docker-compose.yml          # PostgreSQL 16
 ├── backend/
 │   ├── pyproject.toml

@@ -1,4 +1,3 @@
-from app.seed import seed_data
 
 
 def test_health(client):

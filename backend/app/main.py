@@ -1,16 +1,24 @@
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import func
+from sqlalchemy import func, text
 from sqlalchemy.orm import Session
 
-from app.database import get_db
+from app.database import get_db, SessionLocal, engine
 from app.models import Account, Transaction, Dispute
 from app.schemas import CustomerOut, DashboardSummary, TransactionOut
 from app.seed import seed_data
-from app.routers import accounts, transactions, disputes
+from app.routers import accounts, transactions, disputes, fraud, chaos
+from app.middleware import ObservabilityMiddleware
+from app.observability import setup_logging, setup_datadog
+from app.chaos import chaos as chaos_state
 
-app = FastAPI(title="Banking Guru API", version="0.1.0")
+# Initialize observability before anything else
+setup_logging()
+setup_datadog()
 
+app = FastAPI(title="FinTechCo API", version="0.1.0")
+
+app.add_middleware(ObservabilityMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173"],
@@ -22,11 +30,28 @@ app.add_middleware(
 app.include_router(accounts.router, prefix="/api/v1")
 app.include_router(transactions.router, prefix="/api/v1")
 app.include_router(disputes.router, prefix="/api/v1")
+app.include_router(fraud.router, prefix="/api/v1")
+app.include_router(chaos.router, prefix="/api/v1")
 
 
 @app.get("/api/v1/health")
 def health():
-    return {"status": "ok"}
+    """Enhanced health check — bypasses chaos, reports real DB + fault injection status."""
+    checks = {"api": "ok"}
+    try:
+        db = SessionLocal()
+        db.execute(text("SELECT 1"))
+        checks["database"] = "ok"
+        db.close()
+    except Exception as e:
+        checks["database"] = f"error: {e}"
+
+    active = chaos_state.active_faults()
+    if active:
+        checks["chaos_active"] = active
+
+    overall = "ok" if checks["database"] == "ok" and not active else "degraded"
+    return {"status": overall, "checks": checks}
 
 
 @app.post("/api/v1/seed")

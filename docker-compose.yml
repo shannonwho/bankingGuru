@@ -2,7 +2,7 @@ services:
   postgres:
     image: postgres:16-alpine
     environment:
-      POSTGRES_DB: banking_guru
+      POSTGRES_DB: fintechco
       POSTGRES_USER: banking
       POSTGRES_PASSWORD: banking_secret
     ports:
@@ -10,7 +10,7 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U banking -d banking_guru"]
+      test: ["CMD-SHELL", "pg_isready -U banking -d fintechco"]
       interval: 5s
       timeout: 3s
       retries: 5

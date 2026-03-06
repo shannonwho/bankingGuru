@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import Account, Dispute, Transaction
-from app.schemas import DisputeOut, DisputeCreate, DisputeUpdate
+from app.schemas import DisputeOut, DisputeCreate, DisputeUpdate, DISPUTE_WINDOW_DAYS
 
 router = APIRouter(prefix="/disputes", tags=["disputes"])
 
@@ -47,6 +47,14 @@ def create_dispute(body: DisputeCreate, db: Session = Depends(get_db)):
     txn = db.query(Transaction).filter(Transaction.id == body.transaction_id).first()
     if not txn:
         raise HTTPException(status_code=404, detail="Transaction not found")
+
+    cutoff = datetime.now(timezone.utc) - timedelta(days=DISPUTE_WINDOW_DAYS)
+    txn_at = txn.transacted_at.replace(tzinfo=timezone.utc) if txn.transacted_at.tzinfo is None else txn.transacted_at
+    if txn_at < cutoff:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Dispute window expired. Disputes must be filed within {DISPUTE_WINDOW_DAYS} days of the transaction.",
+        )
 
     existing = db.query(Dispute).filter(Dispute.transaction_id == body.transaction_id).first()
     if existing:

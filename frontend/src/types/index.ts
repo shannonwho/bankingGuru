@@ -58,6 +58,27 @@ export interface Dispute {
   created_at: string;
 }
 
+export interface ScoredTransaction {
+  transaction_id: string;
+  account_id: string;
+  merchant_name: string;
+  merchant_category: string;
+  amount: number;
+  transacted_at: string;
+  fraud_score: number;
+  risk_level: "LOW" | "MEDIUM" | "HIGH";
+  flags: string[];
+}
+
+export interface FraudSummary {
+  total_scored: number;
+  high_risk_count: number;
+  medium_risk_count: number;
+  low_risk_count: number;
+  avg_fraud_score: number;
+  scored_transactions: ScoredTransaction[];
+}
+
 export interface DashboardSummary {
   total_accounts: number;
   total_balance: number;

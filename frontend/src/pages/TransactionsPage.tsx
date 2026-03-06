@@ -3,9 +3,10 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { TransactionTable } from "@/components/transactions/TransactionTable";
 import { TransactionFilters, type Filters } from "@/components/transactions/TransactionFilters";
+import { DisputeForm } from "@/components/disputes/DisputeForm";
 import { getTransactions } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
-import type { Transaction } from "@/types";
+import type { Dispute, Transaction } from "@/types";
 
 const emptyFilters: Filters = {
   category: "",
@@ -22,6 +23,7 @@ export function TransactionsPage() {
   const [page, setPage] = useState(1);
   const [filters, setFilters] = useState<Filters>(emptyFilters);
   const [error, setError] = useState("");
+  const [disputeTarget, setDisputeTarget] = useState<Transaction | null>(null);
   const perPage = 20;
 
   const load = useCallback(() => {
@@ -45,6 +47,10 @@ export function TransactionsPage() {
 
   const totalPages = Math.ceil(total / perPage);
 
+  const handleDisputeCreated = (_d: Dispute) => {
+    setDisputeTarget(null);
+  };
+
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-bold">Transactions</h1>
@@ -58,8 +64,19 @@ export function TransactionsPage() {
       {error && <p className="text-destructive">{error}</p>}
 
       <Card>
-        <TransactionTable transactions={transactions} />
+        <TransactionTable
+          transactions={transactions}
+          onDispute={(t) => setDisputeTarget(t)}
+        />
       </Card>
+
+      {/* Controlled dispute form: opens when a row's "Dispute" button is clicked */}
+      <DisputeForm
+        transaction={disputeTarget ?? undefined}
+        open={disputeTarget !== null}
+        onOpenChange={(o) => { if (!o) setDisputeTarget(null); }}
+        onCreated={handleDisputeCreated}
+      />
 
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">

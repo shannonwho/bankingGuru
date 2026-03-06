@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 
 # --- Customer ---
@@ -78,15 +78,50 @@ class DisputeOut(BaseModel):
     model_config = {"from_attributes": True}
 
 
+DISPUTE_REASONS = {"unauthorized", "duplicate", "wrong_amount", "not_received", "other"}
+
+DISPUTE_WINDOW_DAYS = 120
+
+
 class DisputeCreate(BaseModel):
     transaction_id: UUID
     reason: str
     description: str
 
+    @field_validator("reason")
+    @classmethod
+    def reason_must_be_valid(cls, v: str) -> str:
+        if v not in DISPUTE_REASONS:
+            raise ValueError(f"reason must be one of: {sorted(DISPUTE_REASONS)}")
+        return v
+
 
 class DisputeUpdate(BaseModel):
     status: str
     resolution_note: str | None = None
+
+
+# --- Fraud ---
+
+class ScoredTransaction(BaseModel):
+    transaction_id: UUID
+    account_id: UUID
+    merchant_name: str
+    merchant_category: str
+    amount: float
+    transacted_at: datetime
+    fraud_score: float
+    risk_level: str   # LOW | MEDIUM | HIGH
+    flags: list[str]
+
+
+class FraudSummary(BaseModel):
+    total_scored: int
+    high_risk_count: int
+    medium_risk_count: int
+    low_risk_count: int
+    avg_fraud_score: float
+    scored_transactions: list[ScoredTransaction]
 
 
 # --- Dashboard ---
